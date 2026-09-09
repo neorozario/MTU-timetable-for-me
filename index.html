@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111b74">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>MSc AI · Group B Timetable</title>
+
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --text:#17202a;
+    --muted:#697582;
+    --line:#e5e9ee;
+    --navy:#111b74;
+    --blue:#e9efff;
+    --blue-border:#d5ddfa;
+    --green:#e9f8f1;
+    --green-border:#cfeadd;
+    --gold:#fff4df;
+    --gold-border:#f0dfbc;
+    --shadow:0 8px 28px rgba(18,31,48,.07);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+
+  html{scroll-behavior:smooth}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.4;
+  }
+
+  button{font:inherit}
+
+  .wrap{
+    max-width:1500px;
+    margin:auto;
+    padding:clamp(16px,3vw,32px);
+  }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:20px;
+    margin-bottom:18px;
+  }
+
+  .eyebrow{
+    color:#283aa6;
+    font-size:.72rem;
+    font-weight:850;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    margin-bottom:7px;
+  }
+
+  h1{
+    margin:0;
+    font-size:clamp(1.5rem,3vw,2.5rem);
+    line-height:1.05;
+    letter-spacing:-.04em;
+  }
+
+  .subtitle{
+    margin:8px 0 0;
+    color:var(--muted);
+    font-size:.94rem;
+  }
+
+  .weeks{
+    flex:0 0 auto;
+    text-align:right;
+    color:var(--muted);
+    font-size:.76rem;
+    line-height:1.5;
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:10px 13px;
+    border-radius:12px;
+  }
+
+  .weeks strong{color:var(--text)}
+
+  .legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+
+  .legend span{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:7px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--line);
+    color:#53606d;
+    font-size:.76rem;
+    font-weight:750;
+  }
+
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dot.lecture{background:#6d82dc}
+  .dot.lab{background:#55a87e}
+  .dot.tutorial{background:#d99a3b}
+
+  /* ---------- Desktop timetable ---------- */
+  .desktop-timetable{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:auto;
+  }
+
+  .desktop-grid{
+    min-width:1120px;
+    display:grid;
+    grid-template-columns:96px repeat(9,minmax(108px,1fr));
+  }
+
+  .d-head{
+    min-height:45px;
+    padding:8px 5px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    background:var(--navy);
+    font-size:.74rem;
+    font-weight:850;
+    letter-spacing:.02em;
+    border-right:1px solid rgba(255,255,255,.14);
+  }
+
+  .d-day{
+    min-height:112px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f7f8fb;
+    color:#27313c;
+    font-weight:850;
+    font-size:.78rem;
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    left:0;
+    z-index:2;
+  }
+
+  .d-cell{
+    min-height:112px;
+    padding:8px;
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+
+  .event{
+    height:100%;
+    min-height:94px;
+    padding:10px 11px;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+
+  .event.lecture{background:var(--blue);border:1px solid var(--blue-border)}
+  .event.lab{background:var(--green);border:1px solid var(--green-border)}
+  .event.tutorial{background:var(--gold);border:1px solid var(--gold-border)}
+
+  .event-type{
+    font-size:.62rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:900;
+    color:#5d6874;
+    margin-bottom:4px;
+  }
+
+  .event-title{
+    margin:0;
+    font-size:.84rem;
+    line-height:1.18;
+    font-weight:800;
+  }
+
+  .event-meta{
+    margin-top:6px;
+    color:#53606d;
+    font-size:.69rem;
+    line-height:1.35;
+  }
+
+  .event-meta strong{color:#303c49}
+
+  .empty{background:#fff}
+
+  .footer{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:.75rem;
+  }
+
+  /* ---------- Mobile timetable ---------- */
+  .mobile-timetable{display:none}
+
+  @media (max-width:760px){
+    body{background:#f2f4f7}
+
+    .wrap{
+      padding:
+        max(14px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(26px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+    }
+
+    header{
+      display:block;
+      margin-bottom:14px;
+    }
+
+    h1{
+      font-size:1.62rem;
+      max-width:600px;
+    }
+
+    .subtitle{
+      font-size:.82rem;
+      margin-top:7px;
+    }
+
+    .weeks{
+      display:inline-block;
+      text-align:left;
+      margin-top:12px;
+      font-size:.72rem;
+    }
+
+    .legend{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom:2px;
+      scrollbar-width:none;
+    }
+
+    .legend::-webkit-scrollbar{display:none}
+
+    .legend span{
+      white-space:nowrap;
+      font-size:.7rem;
+      padding:6px 9px;
+    }
+
+    .desktop-timetable{display:none}
+    .mobile-timetable{display:block}
+
+    .mobile-nav{
+      position:sticky;
+      top:0;
+      z-index:20;
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      padding:8px 0;
+      margin:0 -2px 8px;
+      scrollbar-width:none;
+      background:rgba(242,244,247,.94);
+      backdrop-filter:blur(10px);
+    }
+
+    .mobile-nav::-webkit-scrollbar{display:none}
+
+    .day-btn{
+      flex:0 0 auto;
+      min-width:59px;
+      min-height:42px;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      color:#596572;
+      font-size:.72rem;
+      font-weight:850;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .day-btn span{
+      display:block;
+      margin-top:2px;
+      font-size:.62rem;
+      font-weight:700;
+      color:#89929b;
+    }
+
+    .day-btn.active{
+      background:var(--navy);
+      color:#fff;
+      border-color:var(--navy);
+      box-shadow:0 5px 14px rgba(17,27,116,.18);
+    }
+
+    .day-btn.active span{color:#dfe3ff}
+
+    .day-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      margin-bottom:12px;
+      overflow:hidden;
+      scroll-margin-top:68px;
+    }
+
+    .day-card.today{
+      border-color:#aeb6ef;
+      box-shadow:0 8px 26px rgba(17,27,116,.10);
+    }
+
+    .day-card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:13px 14px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .day-name{
+      font-size:1rem;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .day-count{
+      color:var(--muted);
+      font-size:.7rem;
+      font-weight:750;
+    }
+
+    .today-badge{
+      display:none;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef1ff;
+      color:#293a9f;
+      font-size:.63rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+    }
+
+    .today .today-badge{display:inline-flex}
+
+    .mobile-event{
+      display:grid;
+      grid-template-columns:73px 1fr;
+      gap:11px;
+      padding:12px 13px;
+      border-bottom:1px solid #edf0f3;
+    }
+
+    .mobile-event:last-child{border-bottom:0}
+
+    .time-range{
+      padding-top:1px;
+      color:#4f5d6a;
+      font-size:.7rem;
+      line-height:1.25;
+      font-weight:800;
+    }
+
+    .time-range .start{
+      color:var(--text);
+      font-size:.84rem;
+      display:block;
+    }
+
+    .mobile-event-card{
+      padding:11px 12px;
+      border-radius:13px;
+      min-width:0;
+    }
+
+    .mobile-event-card.lecture{background:var(--blue);border:1px solid var(--blue-border)}
+    .mobile-event-card.lab{background:var(--green);border:1px solid var(--green-border)}
+    .mobile-event-card.tutorial{background:var(--gold);border:1px solid var(--gold-border)}
+
+    .mobile-event-top{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      justify-content:space-between;
+    }
+
+    .mobile-type{
+      font-size:.6rem;
+      text-transform:uppercase;
+      letter-spacing:.075em;
+      font-weight:900;
+      color:#5d6874;
+    }
+
+    .mobile-title{
+      margin:3px 0 0;
+      font-size:.9rem;
+      line-height:1.2;
+      font-weight:850;
+    }
+
+    .mobile-info{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px 10px;
+      margin-top:8px;
+      color:#596672;
+      font-size:.69rem;
+    }
+
+    .mobile-info strong{color:#303c49}
+
+    .empty-day{
+      padding:22px 14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:.8rem;
+    }
+
+    .footer{
+      padding:0 2px;
+      font-size:.7rem;
+    }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="eyebrow">University Timetable</div>
+      <h1>MSc in Artificial Intelligence · Group B</h1>
+      <p class="subtitle">Student Set CO.MSC-AI-B · Department of Computer Science</p>
+    </div>
+    <div class="weeks">
+      <strong>Teaching weeks</strong><br>
+      Weeks 2–8 &amp; 10–15 · 7/9/26 &amp; 13/12/26
+    </div>
+  </header>
+
+  <div class="legend" aria-label="Class types">
+    <span><i class="dot lecture"></i> Lecture</span>
+    <span><i class="dot lab"></i> Lab</span>
+    <span><i class="dot tutorial"></i> Tutorial</span>
+  </div>
+
+  <!-- Desktop: hourly timetable -->
+  <section class="desktop-timetable" aria-label="Weekly timetable">
+    <div class="desktop-grid">
+      <div class="d-head">DAY</div>
+      <div class="d-head">09:00–10:00</div>
+      <div class="d-head">10:00–11:00</div>
+      <div class="d-head">11:00–12:00</div>
+      <div class="d-head">12:00–13:00</div>
+      <div class="d-head">13:00–14:00</div>
+      <div class="d-head">14:00–15:00</div>
+      <div class="d-head">15:00–16:00</div>
+      <div class="d-head">16:00–17:00</div>
+      <div class="d-head">17:00–18:00</div>
+
+      <!-- Monday -->
+      <div class="d-day">MON</div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C170</div><p class="event-title">Robotics &amp; Autonomous Systems</p></div><div class="event-meta">David Murphy</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C170</div><p class="event-title">Robotics &amp; Autonomous Systems</p></div><div class="event-meta">David Murphy</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C170</div><p class="event-title">Research Practice &amp; Ethics</p></div><div class="event-meta">Mubashir Rehmani</div></div></div>
+      <div class="d-cell empty"></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · LC1.18</div><p class="event-title">Metaheuristic Optimisation</p></div><div class="event-meta">Diarmuid Grimes</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C127</div><p class="event-title">Practical Machine Learning</p></div><div class="event-meta">Ted Scully</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C127</div><p class="event-title">Practical Machine Learning</p></div><div class="event-meta">Ted Scully</div></div></div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div>
+
+      <!-- Tuesday -->
+      <div class="d-day">TUE</div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C127</div><p class="event-title">Big Data Processing</p></div><div class="event-meta">Ignacio Castiñeiras</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C127</div><p class="event-title">Big Data Processing</p></div><div class="event-meta">Ignacio Castiñeiras</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · IT2.1</div><p class="event-title">Metaheuristic Optimisation</p></div><div class="event-meta">Diarmuid Grimes</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · IT2.1</div><p class="event-title">Metaheuristic Optimisation</p></div><div class="event-meta">Diarmuid Grimes</div></div></div>
+      <div class="d-cell empty"></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · LC1.15</div><p class="event-title">Metaheuristic Optimisation</p></div><div class="event-meta">Diarmuid Grimes</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · B219</div><p class="event-title">Knowledge Representation</p></div><div class="event-meta">Ruairi O’ Reilly</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · B219</div><p class="event-title">Knowledge Representation</p></div><div class="event-meta">Ruairi O’ Reilly</div></div></div>
+      <div class="d-cell empty"></div>
+
+      <!-- Wednesday -->
+      <div class="d-day">WED</div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C170</div><p class="event-title">Big Data Processing</p></div><div class="event-meta">Ignacio Castiñeiras</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C170</div><p class="event-title">Big Data Processing</p></div><div class="event-meta">Ignacio Castiñeiras</div></div></div>
+      <div class="d-cell"><div class="event tutorial"><div><div class="event-type">Tutorial · D160</div><p class="event-title">Research Practice &amp; Ethics</p></div><div class="event-meta">Mubashir Rehmani</div></div></div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · B219</div><p class="event-title">Research Practice &amp; Ethics</p></div><div class="event-meta">Mubashir Rehmani</div></div></div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div><div class="d-cell empty"></div>
+
+      <!-- Thursday -->
+      <div class="d-day">THU</div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C134x</div><p class="event-title">Robotics &amp; Autonomous Systems</p></div><div class="event-meta">David Murphy</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C134x</div><p class="event-title">Robotics &amp; Autonomous Systems</p></div><div class="event-meta">David Murphy</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C128</div><p class="event-title">Knowledge Representation</p></div><div class="event-meta">Ruairi O’ Reilly</div></div></div>
+      <div class="d-cell"><div class="event lab"><div><div class="event-type">Lab · C128</div><p class="event-title">Knowledge Representation</p></div><div class="event-meta">Ruairi O’ Reilly</div></div></div>
+      <div class="d-cell empty"></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C169</div><p class="event-title">Practical Machine Learning</p></div><div class="event-meta">Ted Scully</div></div></div>
+      <div class="d-cell"><div class="event lecture"><div><div class="event-type">Lecture · C169</div><p class="event-title">Practical Machine Learning</p></div><div class="event-meta">Ted Scully</div></div></div>
+
+      <!-- Friday -->
+      <div class="d-day">FRI</div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div><div class="d-cell empty"></div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div><div class="d-cell empty"></div>
+      <div class="d-cell empty"></div><div class="d-cell empty"></div><div class="d-cell empty"></div>
+    </div>
+  </section>
+
+  <!-- Mobile: day-by-day cards -->
+  <section class="mobile-timetable" aria-label="Mobile weekly timetable">
+    <nav class="mobile-nav" aria-label="Jump to day">
+      <button class="day-btn" data-target="monday">MON<span>Mon</span></button>
+      <button class="day-btn" data-target="tuesday">TUE<span>Tue</span></button>
+      <button class="day-btn" data-target="wednesday">WED<span>Wed</span></button>
+      <button class="day-btn" data-target="thursday">THU<span>Thu</span></button>
+      <button class="day-btn" data-target="friday">FRI<span>Fri</span></button>
+    </nav>
+
+    <article class="day-card" id="monday" data-day="1">
+      <div class="day-card-head">
+        <div class="day-name">Monday</div>
+        <div>
+          <span class="today-badge">Today</span>
+          <span class="day-count">4 sessions</span>
+        </div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">09:00</span>10:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · C170</div><p class="mobile-title">Robotics &amp; Autonomous Systems</p><div class="mobile-info"><span><strong>David Murphy</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">10:00</span>11:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · C170</div><p class="mobile-title">Robotics &amp; Autonomous Systems</p><div class="mobile-info"><span><strong>David Murphy</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">11:00</span>12:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · C170</div><p class="mobile-title">Research Practice &amp; Ethics</p><div class="mobile-info"><span><strong>Mubashir Rehmani</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">13:00</span>15:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · LC1.18</div><p class="mobile-title">Metaheuristic Optimisation</p><div class="mobile-info"><span><strong>Diarmuid Grimes</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">14:00</span>16:00</div>
+        <div class="mobile-event-card lab"><div class="mobile-type">Lab · C127</div><p class="mobile-title">Practical Machine Learning</p><div class="mobile-info"><span><strong>Ted Scully</strong></span></div></div>
+      </div>
+    </article>
+
+    <article class="day-card" id="tuesday" data-day="2">
+      <div class="day-card-head">
+        <div class="day-name">Tuesday</div>
+        <div><span class="today-badge">Today</span><span class="day-count">4 sessions</span></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">09:00</span>11:00</div>
+        <div class="mobile-event-card lab"><div class="mobile-type">Lab · C127</div><p class="mobile-title">Big Data Processing</p><div class="mobile-info"><span><strong>Ignacio Castiñeiras</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">11:00</span>13:00</div>
+        <div class="mobile-event-card lab"><div class="mobile-type">Lab · IT2.1</div><p class="mobile-title">Metaheuristic Optimisation</p><div class="mobile-info"><span><strong>Diarmuid Grimes</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">14:00</span>15:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · LC1.15</div><p class="mobile-title">Metaheuristic Optimisation</p><div class="mobile-info"><span><strong>Diarmuid Grimes</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">15:00</span>17:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · B219</div><p class="mobile-title">Knowledge Representation</p><div class="mobile-info"><span><strong>Ruairi O’ Reilly</strong></span></div></div>
+      </div>
+    </article>
+
+    <article class="day-card" id="wednesday" data-day="3">
+      <div class="day-card-head">
+        <div class="day-name">Wednesday</div>
+        <div><span class="today-badge">Today</span><span class="day-count">3 sessions</span></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">09:00</span>11:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · C170</div><p class="mobile-title">Big Data Processing</p><div class="mobile-info"><span><strong>Ignacio Castiñeiras</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">11:00</span>12:00</div>
+        <div class="mobile-event-card tutorial"><div class="mobile-type">Tutorial · D160</div><p class="mobile-title">Research Practice &amp; Ethics</p><div class="mobile-info"><span><strong>Mubashir Rehmani</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">14:00</span>15:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · B219</div><p class="mobile-title">Research Practice &amp; Ethics</p><div class="mobile-info"><span><strong>Mubashir Rehmani</strong></span></div></div>
+      </div>
+    </article>
+
+    <article class="day-card" id="thursday" data-day="4">
+      <div class="day-card-head">
+        <div class="day-name">Thursday</div>
+        <div><span class="today-badge">Today</span><span class="day-count">3 sessions</span></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">11:00</span>13:00</div>
+        <div class="mobile-event-card lab"><div class="mobile-type">Lab · C134x</div><p class="mobile-title">Robotics &amp; Autonomous Systems</p><div class="mobile-info"><span><strong>David Murphy</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">13:00</span>15:00</div>
+        <div class="mobile-event-card lab"><div class="mobile-type">Lab · C128</div><p class="mobile-title">Knowledge Representation</p><div class="mobile-info"><span><strong>Ruairi O’ Reilly</strong></span></div></div>
+      </div>
+      <div class="mobile-event">
+        <div class="time-range"><span class="start">16:00</span>18:00</div>
+        <div class="mobile-event-card lecture"><div class="mobile-type">Lecture · C169</div><p class="mobile-title">Practical Machine Learning</p><div class="mobile-info"><span><strong>Ted Scully</strong></span></div></div>
+      </div>
+    </article>
+
+    <article class="day-card" id="friday" data-day="5">
+      <div class="day-card-head">
+        <div class="day-name">Friday</div>
+        <div><span class="today-badge">Today</span><span class="day-count">Free</span></div>
+      </div>
+      <div class="empty-day">No scheduled classes 🎉</div>
+    </article>
+  </section>
+
+  <div class="footer">
+    <span>Desktop: 09:00–18:00 hourly view · Mobile: day-by-day view</span>
+    <span>MSc AI · Group B</span>
+  </div>
+</div>
+
+<script>
+  // Mobile day navigation + automatic "Today" highlight.
+  (() => {
+    const buttons = [...document.querySelectorAll('.day-btn')];
+    const cards = [...document.querySelectorAll('.day-card')];
+
+    const jsDay = new Date().getDay(); // Sun=0, Mon=1, ... Sat=6
+    if (jsDay >= 1 && jsDay <= 5) {
+      const todayCard = document.querySelector(`[data-day="${jsDay}"]`);
+      const todayBtn = buttons.find(b => b.dataset.target === todayCard?.id);
+      todayCard?.classList.add('today');
+      todayBtn?.classList.add('active');
+    } else {
+      buttons[0]?.classList.add('active');
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      });
+    });
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (!visible) return;
+        const id = visible.target.id;
+        buttons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      }, { rootMargin: '-18% 0px -65% 0px', threshold: [0.1, 0.35, 0.6] });
+
+      cards.forEach(card => observer.observe(card));
+    }
+  })();
+</script>
+</body>
+</html>
